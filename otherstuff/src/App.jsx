@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons"; // Chakra's built-in icons
-import { MdStar } from "react-icons/md"; // Import the star icon
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { MdStar } from "react-icons/md";
+import { FaGithub, FaUserCircle } from "react-icons/fa"; // Import GitHub and User icons
 import debounce from "lodash/debounce";
 import { AppCard } from "./components/AppCard";
 import { apps } from "./utils/content";
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; // React Router
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import {
   Box,
   Input,
@@ -22,7 +22,17 @@ import {
   DrawerCloseButton,
   useDisclosure,
   useBreakpointValue,
-  useColorMode, // Chakra hook for theme management
+  useColorMode,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Link,
+  Text,
 } from "@chakra-ui/react";
 import { SearchIcon, HamburgerIcon } from "@chakra-ui/icons";
 import { AppPage } from "./components/AppPage";
@@ -38,14 +48,18 @@ export const App = () => {
   });
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const { colorMode, toggleColorMode } = useColorMode(); // Chakra's theme hook
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose,
+  } = useDisclosure();
 
-  // Separate spotlight app and others
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const { colorMode, toggleColorMode } = useColorMode();
+
   const spotlightApp = apps.find((app) => app.isSpotlight);
   const otherApps = filteredApps.filter((app) => !app.isSpotlight);
 
-  // Update filtered apps when search term or filters change
   useEffect(() => {
     const filterApps = () => {
       const lowerSearch = searchTerm.toLowerCase();
@@ -124,7 +138,7 @@ export const App = () => {
             </Box>
           )}
 
-          <InputGroup flex="1" ml={4}>
+          <InputGroup flex="1" ml={4} mr={4}>
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="gray.400" />
             </InputLeftElement>
@@ -133,6 +147,15 @@ export const App = () => {
               onChange={(e) => handleSearch(e.target.value)}
             />
           </InputGroup>
+
+          {/* Account Icon Button */}
+          <IconButton
+            aria-label="Account"
+            icon={<FaUserCircle />}
+            variant="ghost"
+            onClick={onModalOpen}
+            fontSize="2xl"
+          />
         </Box>
 
         {/* Sidebar Drawer */}
@@ -156,6 +179,21 @@ export const App = () => {
                 )}
               </Box>
 
+              <Link
+                href="https://github.com/RobotsBuildingEducation/otherstuff"
+                isExternal
+              >
+                <Button
+                  leftIcon={<FaGithub />}
+                  background="black"
+                  color="white"
+                  width="100%"
+                  mt={4}
+                >
+                  GitHub
+                </Button>
+              </Link>
+
               {isMobile &&
                 ["web", "android", "ios", "desktop"].map((platform) => (
                   <Checkbox
@@ -175,14 +213,27 @@ export const App = () => {
           </DrawerContent>
         </Drawer>
 
+        {/* Modal for Account */}
+        <Modal isOpen={isModalOpen} onClose={onModalClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Account</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Text>This is where account-related actions would appear.</Text>
+            </ModalBody>
+            <ModalFooter>
+              <Button onClick={onModalClose}>Close</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
         {/* Routes */}
         <Routes>
-          {/* Main Content Route */}
           <Route
             path="/"
             element={
               <Box mt={20} px={4}>
-                {/* Spotlight App */}
                 {spotlightApp && (
                   <Box
                     mb={8}
@@ -218,7 +269,6 @@ export const App = () => {
                   </Box>
                 )}
 
-                {/* Other Apps */}
                 <Box
                   display="grid"
                   gridTemplateColumns={{
@@ -236,7 +286,6 @@ export const App = () => {
               </Box>
             }
           />
-          {/* App Detail Routes */}
           {apps.map((app) => (
             <Route
               key={app.id}
