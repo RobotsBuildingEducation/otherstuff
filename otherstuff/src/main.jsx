@@ -7,6 +7,7 @@ import {
 } from "@chakra-ui/react";
 import { App } from "./App";
 import "./index.css";
+import { BrowserRouter } from "react-router-dom";
 
 // Custom theme for light and dark modes
 const customTheme = extendTheme({
@@ -33,7 +34,9 @@ createRoot(document.getElementById("root")).render(
     {/* ColorModeScript ensures the initial theme is applied */}
     <ColorModeScript initialColorMode={customTheme.config.initialColorMode} />
     <ChakraProvider theme={customTheme}>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </ChakraProvider>
   </StrictMode>
 );

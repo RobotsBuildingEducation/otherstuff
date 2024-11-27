@@ -21,7 +21,10 @@ export const AppCard = React.memo(({ app, isSpotlight }) => {
   return (
     <Box
       as={RouterLink}
-      to={`/${app.name.toLowerCase().split(" ").join("-")}`} // Generate route from name
+      to={`/${app.npub || app.submittedBy}/${app.name
+        .toLowerCase()
+        .split(" ")
+        .join("-")}`} // Generate route from name
       borderWidth={1}
       borderColor={borderColor}
       borderRadius="lg"
