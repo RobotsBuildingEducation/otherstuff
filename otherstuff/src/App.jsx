@@ -38,6 +38,9 @@ import {
   VStack,
   Button,
   Text,
+  Badge,
+  Flex,
+  Divider,
 } from "@chakra-ui/react";
 import { SearchIcon, HamburgerIcon } from "@chakra-ui/icons";
 import { AppPage } from "./components/AppPage";
@@ -65,6 +68,7 @@ export const App = () => {
     ios: false,
     desktop: false,
   });
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const [nsecInput, setNsecInput] = useState("");
   const [isSignedIn, setIsSignedIn] = useState(!!nostrPubKey);
@@ -79,7 +83,18 @@ export const App = () => {
   const isMobile = useBreakpointValue({ base: true, md: false });
   const { colorMode, toggleColorMode } = useColorMode();
 
-  // Fetch verified apps from Firebase
+  const getCategoryStats = () => {
+    const stats = {};
+    allApps.forEach((app) => {
+      if (app.categories) {
+        app.categories.forEach((category) => {
+          stats[category] = (stats[category] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(stats).sort((a, b) => b[1] - a[1]);
+  };
+
   useEffect(() => {
     const fetchVerifiedApps = async () => {
       try {
@@ -91,7 +106,6 @@ export const App = () => {
           isVerified: true,
         }));
 
-        // Combine verified apps with existing apps
         const combinedApps = [...verifiedApps, ...apps];
         setAllApps(combinedApps);
         setFilteredApps(combinedApps);
@@ -121,13 +135,16 @@ export const App = () => {
           (selectedPlatforms.ios && app.platforms?.includes("ios")) ||
           (selectedPlatforms.desktop && app.platforms?.includes("desktop"));
 
-        return matchesSearch && matchesPlatform;
+        const matchesCategory =
+          !selectedCategory || app.categories?.includes(selectedCategory);
+
+        return matchesSearch && matchesPlatform && matchesCategory;
       });
       setFilteredApps(result);
     };
 
     filterApps();
-  }, [searchTerm, selectedPlatforms, allApps]);
+  }, [searchTerm, selectedPlatforms, selectedCategory, allApps]);
 
   const spotlightApp = filteredApps.find((app) => app.isSpotlight);
   const otherApps = filteredApps.filter((app) => !app.isSpotlight);
@@ -213,7 +230,6 @@ export const App = () => {
 
   return (
     <Box p={4} minHeight="100vh">
-      {/* Top Navigation */}
       <Box
         position="fixed"
         top="0"
@@ -287,13 +303,18 @@ export const App = () => {
         </div>
       </Box>
 
-      {/* Sidebar Drawer */}
       <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Menu</DrawerHeader>
-          <DrawerBody>
+          <DrawerHeader
+            backgroundColor={colorMode === "dark" ? "#35304B" : "white"}
+          >
+            Menu
+          </DrawerHeader>
+          <DrawerBody
+            backgroundColor={colorMode === "dark" ? "#35304B" : "white"}
+          >
             <Box display="flex" alignItems="center" mb={4}>
               <Switch
                 onChange={toggleColorMode}
@@ -317,11 +338,57 @@ export const App = () => {
             >
               GitHub
             </Button>
+            <Divider my={4} />
+
+            <Text fontWeight="bold" mb={3}>
+              Categories
+            </Text>
+            <VStack align="stretch" spacing={2}>
+              {selectedCategory && (
+                <Button
+                  size="sm"
+                  colorScheme="red"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    onClose();
+                  }}
+                  mb={2}
+                >
+                  Clear Filter
+                </Button>
+              )}
+              {getCategoryStats().map(([category, count]) => (
+                <Button
+                  key={category}
+                  size="sm"
+                  variant={selectedCategory === category ? "solid" : "outline"}
+                  colorScheme={selectedCategory === category ? "blue" : "gray"}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    // onClose();
+                  }}
+                >
+                  <Flex justify="space-between" width="100%">
+                    <Text>{category}</Text>
+                    <Badge
+                      ml={2}
+                      colorScheme={
+                        selectedCategory === category ? "white" : "gray"
+                      }
+                    >
+                      {count}
+                    </Badge>
+                  </Flex>
+                </Button>
+              ))}
+            </VStack>
+
+            <Divider my={4} />
           </DrawerBody>
         </DrawerContent>
       </Drawer>
 
-      {/* Modal for Account */}
       <Modal isOpen={isModalOpen} onClose={onModalClose}>
         <ModalOverlay />
         <ModalContent>
@@ -365,7 +432,6 @@ export const App = () => {
         </ModalContent>
       </Modal>
 
-      {/* Routes */}
       <Routes>
         <Route
           path="/"

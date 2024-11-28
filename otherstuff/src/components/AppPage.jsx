@@ -75,16 +75,23 @@ export const AppPage = ({ app }) => {
           </Link>
         </Box>
       </Flex>
-      {app.npub && (
-        <Box mt={8}>
-          <Heading size="md" color={textColor} mb={2}>
-            Nostr Public Key
-          </Heading>
-          <Text color={descriptionColor} fontSize="sm">
-            {app.npub}
-          </Text>
-        </Box>
-      )}
+      {app.npub ||
+        (app.submittedBy && (
+          <Box mt={8}>
+            <Heading size="md" color={textColor} mb={2}>
+              Creator
+            </Heading>
+            <Link
+              href={`https://primal.net/p/${app.npub || app.submittedBy}`}
+              color="blue.400"
+              fontWeight="bold"
+              isExternal
+              fontSize="lg"
+            >
+              Creator's page
+            </Link>
+          </Box>
+        ))}
 
       {/* Features Section */}
       <Box mt={8}>
