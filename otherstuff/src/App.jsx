@@ -83,6 +83,22 @@ export const App = () => {
   const isMobile = useBreakpointValue({ base: true, md: false });
   const { colorMode, toggleColorMode } = useColorMode();
 
+  const [submittedApps, setSubmittedApps] = useState([]);
+
+  const fetchSubmittedApps = async () => {
+    try {
+      const appsCollectionRef = collection(database, "SubmittedApps");
+      const appsSnapshot = await getDocs(appsCollectionRef);
+      const appsData = appsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setSubmittedApps(appsData);
+    } catch (error) {
+      console.error("Error fetching submitted apps:", error);
+    }
+  };
+
   const getCategoryStats = () => {
     const stats = {};
     allApps.forEach((app) => {
@@ -115,6 +131,7 @@ export const App = () => {
     };
 
     fetchVerifiedApps();
+    fetchSubmittedApps();
   }, []);
 
   useEffect(() => {
@@ -447,6 +464,16 @@ export const App = () => {
       </Modal>
 
       <Routes>
+        {submittedApps.map((app) => (
+          <Route
+            key={app.id}
+            path={`/${app.npub || app.submittedBy}/${app.name
+              .toLowerCase()
+              .split(" ")
+              .join("-")}`}
+            element={<AppPage app={app} />}
+          />
+        ))}
         <Route
           path="/"
           element={
@@ -520,7 +547,12 @@ export const App = () => {
         />
         <Route
           path="/manager"
-          element={<AppManager fetchProfile={AppManager} />}
+          element={
+            <AppManager
+              submittedApps={submittedApps}
+              setSubmittedApps={setSubmittedApps}
+            />
+          }
         />
       </Routes>
     </Box>

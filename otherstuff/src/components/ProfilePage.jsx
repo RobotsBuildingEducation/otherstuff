@@ -17,9 +17,11 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  FormLabel,
+  FormControl,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { database } from "../database/database";
 import {
   doc,
@@ -30,6 +32,7 @@ import {
   setDoc,
   getDoc,
 } from "firebase/firestore";
+import { FaEye } from "react-icons/fa";
 
 const INITIAL_FORM_STATE = {
   appName: "",
@@ -124,13 +127,6 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
     onOpen();
   };
 
-  const generateAppId = (appName, npub) => {
-    // Create a standardized ID format that will be consistent across collections
-    return `${appName
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "-")}-${npub.substring(0, 8)}`;
-  };
-
   const handleSubmitApp = async () => {
     const {
       appName,
@@ -174,9 +170,22 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
     setIsSubmitting(true);
 
     try {
-      const appId = editingAppId || generateAppId(appName, npub);
+      let appId;
       const userDocRef = doc(database, "users", npub);
-      const userAppDocRef = doc(collection(userDocRef, "apps"), appId);
+      const userAppsCollectionRef = collection(userDocRef, "apps");
+
+      if (editingAppId) {
+        // If editing, use existing ID
+        appId = editingAppId;
+        const userAppDocRef = doc(userAppsCollectionRef, appId);
+        await setDoc(userAppDocRef, appDoc);
+      } else {
+        // For new apps, let Firebase generate the ID
+        const userAppDocRef = await addDoc(userAppsCollectionRef, appDoc);
+        appId = userAppDocRef.id;
+      }
+
+      // Use the same ID across collections
       const submittedAppDocRef = doc(database, "SubmittedApps", appId);
       const verifiedAppDocRef = doc(database, "VerifiedApps", appId);
 
@@ -189,14 +198,11 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
         }
       }
 
-      // Update/Create in user's subcollection
-      await setDoc(userAppDocRef, appDoc);
-
-      // Update/Create in SubmittedApps
+      // Update/Create in SubmittedApps using the same ID
       await setDoc(submittedAppDocRef, appDoc);
 
       // Refresh apps list
-      const appsSnapshot = await getDocs(collection(userDocRef, "apps"));
+      const appsSnapshot = await getDocs(userAppsCollectionRef);
       setApps(appsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
       setFormState(INITIAL_FORM_STATE);
@@ -213,7 +219,7 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
   return (
     <Box p={4} mt={20}>
       <Text fontSize="xl" mb={4}>
-        Profile for {npub}
+        Profile for {npub.substring(0, 8)}
       </Text>
 
       {localStorage.getItem("local_npub") === npub && (
@@ -264,11 +270,24 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
                   <Text>Platforms: {app.platforms?.join(", ")}</Text>
                 </VStack>
                 {localStorage.getItem("local_npub") === npub && (
-                  <IconButton
-                    icon={<EditIcon />}
-                    onClick={() => handleEditApp(app)}
-                    colorScheme="blue"
-                  />
+                  <>
+                    <IconButton
+                      icon={<EditIcon />}
+                      onClick={() => handleEditApp(app)}
+                      colorScheme="blue"
+                    />
+                    <Button
+                      as={Link}
+                      to={`/${app.npub || app.submittedBy}/${app.name
+                        .toLowerCase()
+                        .split(" ")
+                        .join("-")}`} // Generate route from name
+                      colorScheme="blue"
+                      variant="outline"
+                    >
+                      Preview
+                    </Button>
+                  </>
                 )}
               </HStack>
             </Box>
@@ -284,89 +303,129 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
           <ModalHeader>{editingAppId ? "Edit App" : "Submit App"}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <VStack spacing={4} align="stretch">
-              <Input
-                placeholder="App Name"
-                name="appName"
-                value={formState.appName}
-                onChange={handleInputChange}
-              />
-              <Input
-                placeholder="URL"
-                name="url"
-                value={formState.url}
-                onChange={handleInputChange}
-              />
-              <Textarea
-                placeholder="Description"
-                name="description"
-                value={formState.description || ""}
-                onChange={handleInputChange}
-                size="sm"
-                resize="vertical"
-              />
-              <Select
-                placeholder="Select Category"
-                name="category"
-                value={formState.category}
-                onChange={handleInputChange}
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-                <option value="createNew">Create New Category</option>
-              </Select>
-              {formState.category === "createNew" && (
-                <Input
-                  placeholder="New Category"
-                  name="newCategory"
-                  value={formState.newCategory}
-                  onChange={handleInputChange}
-                />
-              )}
-              <Input
-                placeholder="Thumbnail URL"
-                name="thumb"
-                value={formState.thumb}
-                onChange={handleInputChange}
-              />
-              <FormArray
-                title="Images (Max 10)"
-                array={formState.images}
-                onAdd={() => handleAddToArray("images", 10)}
-                onRemove={(index) => handleRemoveFromArray("images", index)}
-                onChange={(index, value) =>
-                  handleArrayChange("images", index, value)
-                }
-              />
-              <FormArray
-                title="Features"
-                array={formState.features}
-                onAdd={() => handleAddToArray("features", 20)}
-                onRemove={(index) => handleRemoveFromArray("features", index)}
-                onChange={(index, value) =>
-                  handleArrayChange("features", index, value)
-                }
-              />
-              <Text fontWeight="bold">Platforms:</Text>
-              <HStack wrap="wrap" spacing={2}>
-                {["Web", "Desktop", "Mobile", "Android"].map((platform) => (
-                  <Button
-                    key={platform}
-                    variant={
-                      formState.platforms.includes(platform)
-                        ? "solid"
-                        : "outline"
-                    }
-                    onClick={() => handlePlatformToggle(platform)}
+            <FormControl>
+              <VStack spacing={4} align="stretch">
+                <div>
+                  <FormLabel htmlFor="appName">Name</FormLabel>
+                  <Input
+                    placeholder="App Name"
+                    name="appName"
+                    value={formState.appName}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div>
+                  <FormLabel htmlFor="url">App URL</FormLabel>
+                  <Input
+                    placeholder="URL"
+                    name="url"
+                    value={formState.url}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div>
+                  <FormLabel htmlFor="description">Description</FormLabel>
+                  <Textarea
+                    placeholder="Description"
+                    name="description"
+                    value={formState.description || ""}
+                    onChange={handleInputChange}
+                    size="sm"
+                    resize="vertical"
+                  />
+                </div>
+                <div>
+                  <FormLabel htmlFor="category">Categories</FormLabel>
+                  <Select
+                    placeholder="Select Category"
+                    name="category"
+                    value={formState.category}
+                    onChange={handleInputChange}
                   >
-                    {platform}
-                  </Button>
-                ))}
-              </HStack>
-            </VStack>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                    <option value="createNew">Create New Category</option>
+                  </Select>
+                </div>
+
+                <div>
+                  {formState.category === "createNew" && (
+                    <>
+                      <FormLabel htmlFor="newCategory">New Category</FormLabel>
+                      <Input
+                        placeholder="New Category"
+                        name="newCategory"
+                        value={formState.newCategory}
+                        onChange={handleInputChange}
+                      />
+                    </>
+                  )}
+                </div>
+                <div>
+                  <FormLabel htmlFor="thumb">Thumbnail URL</FormLabel>
+                  <Input
+                    placeholder="Thumbnail URL"
+                    name="thumb"
+                    value={formState.thumb}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <br />
+                <div>
+                  <FormLabel htmlFor="images">
+                    Gallery Image URLs (Max 10)
+                  </FormLabel>
+                  <FormArray
+                    name="images"
+                    title="Images"
+                    array={formState.images}
+                    onAdd={() => handleAddToArray("images", 10)}
+                    onRemove={(index) => handleRemoveFromArray("images", index)}
+                    onChange={(index, value) =>
+                      handleArrayChange("images", index, value)
+                    }
+                  />
+                </div>
+
+                <div>
+                  <FormArray
+                    name="features"
+                    title="Features"
+                    array={formState.features}
+                    onAdd={() => handleAddToArray("features", 20)}
+                    onRemove={(index) =>
+                      handleRemoveFromArray("features", index)
+                    }
+                    onChange={(index, value) =>
+                      handleArrayChange("features", index, value)
+                    }
+                  />
+                </div>
+                <div>
+                  <FormLabel htmlFor="platforms">Platforms</FormLabel>
+                  <HStack wrap="wrap" spacing={2}>
+                    {["Web", "Desktop", "Mobile", "Android"].map((platform) => (
+                      <Button
+                        name="platforms"
+                        key={platform}
+                        variant={
+                          formState.platforms.includes(platform)
+                            ? "solid"
+                            : "outline"
+                        }
+                        onClick={() => handlePlatformToggle(platform)}
+                      >
+                        {platform}
+                      </Button>
+                    ))}
+                  </HStack>
+                </div>
+              </VStack>
+            </FormControl>
           </ModalBody>
           <ModalFooter>
             <Button
