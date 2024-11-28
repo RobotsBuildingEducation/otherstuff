@@ -243,15 +243,15 @@ export const App = () => {
         alignItems="center"
         backgroundColor={colorMode === "dark" ? "#120c1f" : "white"}
       >
-        {pathname === "/" ? (
-          <IconButton
-            aria-label="Menu"
-            icon={<HamburgerIcon />}
-            variant="outline"
-            onClick={onOpen}
-            mr={2}
-          />
-        ) : null}
+        {/* {pathname === "/" ? ( */}
+        <IconButton
+          aria-label="Menu"
+          icon={<HamburgerIcon />}
+          variant="outline"
+          onClick={onOpen}
+          mr={2}
+        />
+        {/* ) : null} */}
         {!isMobile && pathname === "/" && (
           <Box display="flex" gap={4}>
             {["web", "android", "ios", "desktop"].map((platform) => (
@@ -340,51 +340,59 @@ export const App = () => {
             </Button>
             <Divider my={4} />
 
-            <Text fontWeight="bold" mb={3}>
-              Categories
-            </Text>
-            <VStack align="stretch" spacing={2}>
-              {selectedCategory && (
-                <Button
-                  size="sm"
-                  colorScheme="red"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedCategory(null);
-                    onClose();
-                  }}
-                  mb={2}
-                >
-                  Clear Filter
-                </Button>
-              )}
-              {getCategoryStats().map(([category, count]) => (
-                <Button
-                  key={category}
-                  size="sm"
-                  variant={selectedCategory === category ? "solid" : "outline"}
-                  colorScheme={selectedCategory === category ? "blue" : "gray"}
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    // onClose();
-                  }}
-                >
-                  <Flex justify="space-between" width="100%">
-                    <Text>{category}</Text>
-                    <Badge
-                      ml={2}
-                      colorScheme={
-                        selectedCategory === category ? "white" : "gray"
-                      }
+            {pathname === "/" ? (
+              <>
+                <Text fontWeight="bold" mb={3}>
+                  Categories
+                </Text>
+                <VStack align="stretch" spacing={2}>
+                  {selectedCategory && (
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        onClose();
+                      }}
+                      mb={2}
                     >
-                      {count}
-                    </Badge>
-                  </Flex>
-                </Button>
-              ))}
-            </VStack>
+                      Clear Filter
+                    </Button>
+                  )}
+                  {getCategoryStats().map(([category, count]) => (
+                    <Button
+                      key={category}
+                      size="sm"
+                      variant={
+                        selectedCategory === category ? "solid" : "outline"
+                      }
+                      colorScheme={
+                        selectedCategory === category ? "blue" : "gray"
+                      }
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        // onClose();
+                      }}
+                    >
+                      <Flex justify="space-between" width="100%">
+                        <Text>{category}</Text>
+                        <Badge
+                          ml={2}
+                          colorScheme={
+                            selectedCategory === category ? "white" : "gray"
+                          }
+                        >
+                          {count}
+                        </Badge>
+                      </Flex>
+                    </Button>
+                  ))}
+                </VStack>
 
-            <Divider my={4} />
+                <Divider my={4} />
+              </>
+            ) : null}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
@@ -392,9 +400,15 @@ export const App = () => {
       <Modal isOpen={isModalOpen} onClose={onModalClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Account</ModalHeader>
+          <ModalHeader
+            backgroundColor={colorMode === "dark" ? "#35304B" : "white"}
+          >
+            Account
+          </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody
+            backgroundColor={colorMode === "dark" ? "#35304B" : "white"}
+          >
             {isSignedIn && nostrPubKey ? (
               <VStack spacing={4} align="stretch">
                 <Text>
@@ -408,7 +422,7 @@ export const App = () => {
             ) : (
               <VStack spacing={4} align="stretch">
                 <Button
-                  colorScheme="teal"
+                  colorScheme="purple"
                   onClick={(event) => handleCreateUser(event, null)}
                   width="100%"
                 >
@@ -423,7 +437,7 @@ export const App = () => {
                   onChange={(e) => setNsecInput(e.target.value)}
                   mb={2}
                 />
-                <Button colorScheme="blue" onClick={handleSignIn}>
+                <Button variant="outline" onClick={handleSignIn}>
                   Sign In
                 </Button>
               </VStack>
