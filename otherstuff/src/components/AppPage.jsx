@@ -10,13 +10,15 @@ import {
   Link,
   SimpleGrid,
   VStack,
+  textDecoration,
 } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 import React from "react";
 
 export const AppPage = ({ app }) => {
   const textColor = useColorModeValue("gray.800", "white");
   const descriptionColor = useColorModeValue("gray.600", "gray.300");
-  const featureColor = useColorModeValue("teal.600", "teal.300");
+  // const featureColor = useColorModeValue(".600", "teal.300");
   const galleryBorderColor = useColorModeValue("gray.200", "gray.700");
 
   return (
@@ -71,27 +73,29 @@ export const AppPage = ({ app }) => {
             isExternal
             fontSize="lg"
           >
-            Visit {app.name}
+            {/* Visit {app.name} */}
+            Launch app
           </Link>
         </Box>
       </Flex>
-      {app.npub ||
-        (app.submittedBy && (
-          <Box mt={8}>
-            <Heading size="md" color={textColor} mb={2}>
-              Creator
-            </Heading>
-            <Link
-              href={`https://primal.net/p/${app.npub || app.submittedBy}`}
-              color="blue.400"
-              fontWeight="bold"
-              isExternal
-              fontSize="lg"
-            >
-              Creator's page
-            </Link>
-          </Box>
-        ))}
+      {app.npub || app.submittedBy ? (
+        <Box mt={8}>
+          <Heading size="md" color={textColor} mb={2}>
+            Creator
+          </Heading>
+          <RouterLink
+            // href={`https://primal.net/p/${app.npub || app.submittedBy}`}
+            to={`/profile/${app.npub || app.submittedBy}`}
+            color="blue.400"
+            fontWeight="bold"
+            isExternal
+            fontSize="lg"
+            style={{ textDecoration: "underline", color: "#4287f5" }}
+          >
+            Creator's page
+          </RouterLink>
+        </Box>
+      ) : null}
 
       {/* Features Section */}
       <Box mt={8}>
@@ -109,7 +113,7 @@ export const AppPage = ({ app }) => {
               borderWidth="1px"
               borderColor={useColorModeValue("gray.200", "gray.600")}
             >
-              <Text color={featureColor} fontWeight="semibold" mb={2}>
+              <Text fontWeight="semibold" mb={2}>
                 {feature}
               </Text>
             </Box>
@@ -132,6 +136,7 @@ export const AppPage = ({ app }) => {
                 rounded="lg"
                 overflow="hidden"
                 shadow="sm"
+                borderRadius="35px"
               >
                 <Image
                   src={image}

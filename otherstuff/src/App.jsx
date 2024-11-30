@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+
+import logoLight from "../public/logo-light.png";
+import logoDark from "../public/logo-dark.png";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { MdStar } from "react-icons/md";
 import { FaGithub, FaUserCircle, FaHome } from "react-icons/fa";
@@ -41,6 +44,8 @@ import {
   Badge,
   Flex,
   Divider,
+  Heading,
+  useToast,
 } from "@chakra-ui/react";
 import { SearchIcon, HamburgerIcon } from "@chakra-ui/icons";
 import { AppPage } from "./components/AppPage";
@@ -49,6 +54,8 @@ import { ProfilePage } from "./components/ProfilePage";
 import { database } from "./database/database";
 import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { AppManager } from "./components/AppManager";
+import { SunsetCanvas } from "./utils/loader";
+// import { generateUsers } from "./utils/dbFunctions";
 
 export const App = () => {
   const { pathname } = useLocation();
@@ -85,6 +92,8 @@ export const App = () => {
 
   const [submittedApps, setSubmittedApps] = useState([]);
 
+  const toast = useToast();
+
   const fetchSubmittedApps = async () => {
     try {
       const appsCollectionRef = collection(database, "SubmittedApps");
@@ -112,6 +121,7 @@ export const App = () => {
   };
 
   useEffect(() => {
+    // generateUsers();
     const fetchVerifiedApps = async () => {
       try {
         const verifiedAppsRef = collection(database, "VerifiedApps");
@@ -244,6 +254,33 @@ export const App = () => {
     onModalClose();
     navigate("/");
   };
+
+  const handleCopyKeys = () => {
+    const keysToCopy = `${localStorage.getItem("local_nsec")}`;
+    navigator.clipboard.writeText(keysToCopy);
+    toast({
+      title: "Keys copied.",
+      description: "Your keys have been copied to the clipboard.",
+      status: "info",
+      duration: 1500,
+      isClosable: true,
+      position: "top",
+      render: () => (
+        <Box
+          color="black"
+          p={3}
+          bg="#FEEBC8" // Custom background color here!
+          borderRadius="md"
+          boxShadow="lg"
+        >
+          <Text fontWeight="bold">Keys copied.</Text>
+          <Text>Your keys have been copied to the clipboard.</Text>
+        </Box>
+      ),
+    });
+  };
+
+  console.log("all apps", allApps);
 
   return (
     <Box p={4} minHeight="100vh">
@@ -429,8 +466,15 @@ export const App = () => {
             {isSignedIn && nostrPubKey ? (
               <VStack spacing={4} align="stretch">
                 <Text>
-                  <strong>Public Key (npub):</strong> {nostrPubKey}
+                  <strong>
+                    Store your secret key somewhere safely to sign into
+                    decentralized apps.
+                  </strong>
+                  <br />
+
+                  <Button onClick={handleCopyKeys}>🔐 Copy secret keys</Button>
                 </Text>
+                <br />
                 <Button onClick={handleFetchProfile}>Profile</Button>
                 <Button onClick={handleSignOut} variant="outline">
                   Sign out
@@ -474,60 +518,93 @@ export const App = () => {
             element={<AppPage app={app} />}
           />
         ))}
+
         <Route
           path="/"
           element={
-            <Box mt={20} px={4}>
-              {spotlightApp && (
-                <Box
-                  mb={8}
-                  display="flex"
-                  justifyContent="center"
-                  width="100%"
-                  position="relative"
-                >
-                  <Box width={{ base: "100%", md: "50%" }} mx="auto">
-                    <Box position="relative">
-                      <Box
-                        position="absolute"
-                        top="-10px"
-                        left="-10px"
-                        backgroundColor="purple.500"
-                        color="purple.200"
-                        fontSize="xs"
-                        fontWeight="bold"
-                        px={2}
-                        py={1}
-                        borderRadius="full"
-                        boxShadow="lg"
-                        display="flex"
-                        alignItems="center"
-                        gap={1}
-                        zIndex="1"
-                      >
-                        <MdStar size="16px" />
+            <>
+              {allApps.length < 1 ? (
+                <div style={{ marginTop: 96, fontSize: 24 }}>
+                  <SunsetCanvas />
+                </div>
+              ) : (
+                <Box mt={20} px={4}>
+                  <div
+                    style={{
+                      width: "100%",
+
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={colorMode === "dark" ? logoDark : logoLight}
+                      width={200}
+                    />
+                  </div>
+                  <Heading
+                    as="h4"
+                    fontSize={{ base: "lg", md: "xl", lg: "2xl" }} // Adjusts font size for mobile, tablet, and desktop
+                    textAlign="center" // Keeps the text centered
+                    width="100%" // Ensures the header spans the full width
+                    // Adjusts margin-top for mobile and larger screens
+                    mt={{ base: "-10", md: "-8" }}
+                    px={{ base: 4, md: 0 }}
+                  >
+                    Other Stuff: Experience Decentralized Software
+                  </Heading>
+                  <br />
+                  {spotlightApp && (
+                    <Box
+                      mb={8}
+                      display="flex"
+                      justifyContent="center"
+                      width="100%"
+                      position="relative"
+                    >
+                      <Box width={{ base: "100%", md: "50%" }} mx="auto">
+                        <Box position="relative">
+                          <Box
+                            position="absolute"
+                            top="-10px"
+                            left="-10px"
+                            backgroundColor="purple.500"
+                            color="purple.200"
+                            fontSize="xs"
+                            fontWeight="bold"
+                            px={2}
+                            py={1}
+                            borderRadius="full"
+                            boxShadow="lg"
+                            display="flex"
+                            alignItems="center"
+                            gap={1}
+                            zIndex="1"
+                          >
+                            <MdStar size="16px" />
+                          </Box>
+                          <AppCard app={spotlightApp} isSpotlight />
+                        </Box>
                       </Box>
-                      <AppCard app={spotlightApp} isSpotlight />
                     </Box>
+                  )}
+                  <Box
+                    display="grid"
+                    gridTemplateColumns={{
+                      base: "repeat(2, 1fr)",
+                      sm: "repeat(2, 1fr)",
+                      lg: "repeat(3, 1fr)",
+                      xl: "repeat(4, 1fr)",
+                    }}
+                    gap={4}
+                  >
+                    {otherApps.map((app) => (
+                      <AppCard key={app.id} app={app} />
+                    ))}
                   </Box>
                 </Box>
               )}
-
-              <Box
-                display="grid"
-                gridTemplateColumns={{
-                  base: "repeat(2, 1fr)",
-                  sm: "repeat(2, 1fr)",
-                  lg: "repeat(3, 1fr)",
-                  xl: "repeat(4, 1fr)",
-                }}
-                gap={4}
-              >
-                {otherApps.map((app) => (
-                  <AppCard key={app.id} app={app} />
-                ))}
-              </Box>
-            </Box>
+            </>
           }
         />
         {allApps.map((app) => (

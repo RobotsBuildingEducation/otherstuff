@@ -1,4 +1,9 @@
 import React, { useEffect, useState } from "react";
+import isEmpty from "lodash/isEmpty";
+import { CgWebsite } from "react-icons/cg";
+import { FiAtSign } from "react-icons/fi";
+import { PiLightning } from "react-icons/pi";
+
 import {
   Box,
   Text,
@@ -19,9 +24,12 @@ import {
   ModalFooter,
   FormLabel,
   FormControl,
+  Link,
+  Image,
+  Collapse,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { database } from "../database/database";
 import {
   doc,
@@ -33,6 +41,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { FaEye } from "react-icons/fa";
+import { AppCard } from "./AppCard";
 
 const INITIAL_FORM_STATE = {
   appName: "",
@@ -56,6 +65,11 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState(existingCategories);
   const [editingAppId, setEditingAppId] = useState(null);
+  const [isCardOpen, setIsCardOpen] = useState(false);
+
+  const toggleCollapse = () => {
+    setIsCardOpen(!isCardOpen);
+  };
 
   // Fetch user profile and apps
   useEffect(() => {
@@ -216,80 +230,182 @@ export const ProfilePage = ({ fetchProfile, existingCategories = [] }) => {
     }
   };
 
+  console.log("profile", profile);
   return (
     <Box p={4} mt={20}>
-      <Text fontSize="xl" mb={4}>
-        Profile for {npub.substring(0, 8)}
-      </Text>
-
-      {localStorage.getItem("local_npub") === npub && (
-        <Button
-          colorScheme="teal"
-          onClick={() => {
-            setEditingAppId(null);
-            setFormState(INITIAL_FORM_STATE);
-            onOpen();
-          }}
-        >
-          Submit New App
-        </Button>
-      )}
-
-      <Box mt={6}>
-        <Text fontSize="lg">Profile Details:</Text>
+      <Box>
         {profile ? (
-          <Box p={4} border="1px solid gray" borderRadius="md" mb={4}>
-            {Object.entries(profile).map(([key, value]) => (
-              <Box key={key} mb={2}>
-                <Text fontWeight="bold">{key}:</Text>
-                <Text>{value}</Text>
-              </Box>
-            ))}
-          </Box>
+          <>
+            {/* <Text fontSize="lg">Profile Details</Text> */}
+
+            <Box borderRadius="md" mb={4}>
+              <>
+                {/* Render the name field first, if it exists */}
+
+                {/* Render the image field second, if it exists */}
+                {"image" in profile && profile.image && (
+                  <Image
+                    loading="eager"
+                    style={{ borderRadius: "25%" }}
+                    src={profile.image}
+                    width="200px"
+                    alt="Profile"
+                    mb={1}
+                  />
+                )}
+
+                {"name" in profile && profile.name && (
+                  <Box mb={2} display="flex">
+                    <Text>{profile.name}</Text>
+                  </Box>
+                )}
+
+                {"lud16" in profile && profile.lud16 && (
+                  <Box display="flex" alignItems={"center"} fontSize="sm">
+                    <PiLightning />
+                    &nbsp;
+                    <Text>{profile.lud16}</Text>
+                  </Box>
+                )}
+
+                <Text fontSize="sm" display="flex" alignItems={"center"}>
+                  {"website" in profile && profile.website && (
+                    <>
+                      <CgWebsite />
+                      <Link
+                        href={profile.website}
+                        color="blue.400"
+                        fontWeight="bold"
+                        isExternal
+                        fontSize="sm"
+                        display="flex"
+                      >
+                        &nbsp;public website
+                      </Link>
+                    </>
+                  )}
+                </Text>
+
+                <Text fontSize="sm" mb={4} display="flex" alignItems={"center"}>
+                  <FiAtSign />
+                  <Link
+                    href={`https://primal.net/p/${npub}`}
+                    color="blue.400"
+                    fontWeight="bold"
+                    isExternal
+                    fontSize="sm"
+                  >
+                    &nbsp;social network
+                  </Link>
+                </Text>
+
+                <Text fontSize="sm">
+                  <b>About</b>
+                  <br />
+                  {"about" in profile && profile.about && <>{profile.about}</>}
+                </Text>
+                {/* Render the rest of the fields
+                <Button
+                  size="sm"
+                  onClick={toggleCollapse}
+                  mb={2}
+                  variant={"outline"}
+                >
+                  {isCardOpen ? `Hide profile details` : `View profile details`}
+                </Button> */}
+
+                {/* Collapsible section */}
+                {/* <Collapse in={isCardOpen} animateOpacity>
+                  <Box mt={4}>
+                    {Object.entries(profile).map(([key, value]) => {
+                      if (
+                        isEmpty(value) ||
+                        key === "name" ||
+                        key === "image" ||
+                        key === "website" ||
+                        key === "lud16"
+                      ) {
+                        return null; // Skip fields already displayed or irrelevant
+                      }
+                      return (
+                        <Box key={key} mb={2}>
+                          <Text fontWeight="bold">{key}</Text>
+                          <Text>{value}</Text>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Collapse> */}
+              </>
+            </Box>
+          </>
         ) : (
           <Text>Loading profile data...</Text>
         )}
       </Box>
 
       <Box mt={6}>
-        <Text fontSize="lg">Submitted Apps:</Text>
+        <Text fontSize="lg">Submitted Apps</Text>
+        {localStorage.getItem("local_npub") === npub && (
+          <Button
+            colorScheme="purple"
+            onClick={() => {
+              setEditingAppId(null);
+              setFormState(INITIAL_FORM_STATE);
+              onOpen();
+            }}
+          >
+            Submit New App
+          </Button>
+        )}
+        <br /> <br />
         {apps.length > 0 ? (
           apps.map((app) => (
             <Box
               key={app.id}
-              p={4}
-              border="1px solid gray"
+              // border="1px solid gray"
               borderRadius="md"
               mb={4}
             >
               <HStack justify="space-between">
-                <VStack align="start" spacing={2}>
+                {/* <VStack align="start" spacing={2}>
                   <Text fontWeight="bold">{app.name}</Text>
                   <Text>Category: {app.categories?.join(", ")}</Text>
                   <Text>Features: {app.features?.join(", ")}</Text>
                   <Text>Platforms: {app.platforms?.join(", ")}</Text>
-                </VStack>
+                </VStack> */}
+                <div style={{ textAlign: "center", maxWidth: "100%" }}>
+                  {/* <Text
+                    // as={Link}
+                    // to={`/${app.npub || app.submittedBy}/${app.name
+                    //   .toLowerCase()
+                    //   .split(" ")
+                    //   .join("-")}`} // Generate route from name
+                    variant="none"
+                  >
+                    Preview
+                  </Text> */}
+                  <AppCard key={app.id} app={app} />
+                </div>
                 {localStorage.getItem("local_npub") === npub && (
-                  <>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      textAlign: "center",
+                    }}
+                  >
+                    Edit
                     <IconButton
                       icon={<EditIcon />}
                       onClick={() => handleEditApp(app)}
-                      colorScheme="blue"
+                      colorScheme="gray"
                     />
-                    <Button
-                      as={Link}
-                      to={`/${app.npub || app.submittedBy}/${app.name
-                        .toLowerCase()
-                        .split(" ")
-                        .join("-")}`} // Generate route from name
-                      colorScheme="blue"
-                      variant="outline"
-                    >
-                      Preview
-                    </Button>
-                  </>
+                  </div>
                 )}
               </HStack>
+              <br />
+              <hr />
             </Box>
           ))
         ) : (

@@ -13,6 +13,8 @@ export const apps = [
       "https://image.nostr.build/ed99ce2492f7705fa7fb7d24faf2042b72cb47660f9cba7d2fceabd3b1e4530e.jpg",
       "https://image.nostr.build/6409ba2f557bb3ec6258a5cb2034705e95efbe11492a42523047f31bd66dc3b2.jpg",
       "https://image.nostr.build/1fe8f9e716d3d254eb0797f6526f6d051e2e6c2b03796fcd5a3ef42cec308a43.jpg",
+      "https://image.nostr.build/348419c7b24efaf7f9ecf8ab3e99a21cf7678d8b6ec72c7da41bdf4e13d7b2a6.jpg",
+      "https://image.nostr.build/6c2b0d960365f0374e16c1b394f49c6c0d1eddd4d1d0df093b352ccad6823b2c.jpg",
     ],
     features: [
       "Smart cards: generate new questions based on progress",
