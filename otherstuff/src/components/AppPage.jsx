@@ -13,7 +13,7 @@ import {
   textDecoration,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import React from "react";
+import React, { useEffect } from "react";
 
 export const AppPage = ({ app }) => {
   const textColor = useColorModeValue("gray.800", "white");
@@ -21,6 +21,9 @@ export const AppPage = ({ app }) => {
   // const featureColor = useColorModeValue(".600", "teal.300");
   const galleryBorderColor = useColorModeValue("gray.200", "gray.700");
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <Box p={8} mt={20}>
       <Flex
