@@ -25,7 +25,10 @@ export const AppManager = ({ submittedApps, setSubmittedApps }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   //   const [submittedApps, setSubmittedApps] = useState([]);
-  const { auth } = useNostr();
+  const { auth } = useNostr(
+    localStorage.getItem("local_npub"),
+    localStorage.getItem("local_nsec")
+  );
   const navigate = useNavigate();
 
   //   useEffect(() => {
