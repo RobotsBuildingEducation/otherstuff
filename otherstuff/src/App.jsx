@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 
-import logoLight from "../public/logo-light.png";
-import logoDark from "../public/logo-dark.png";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { MdStar } from "react-icons/md";
 import { FaGithub, FaUserCircle, FaHome } from "react-icons/fa";
@@ -290,7 +288,7 @@ export const App = () => {
         left="0"
         right="0"
         zIndex="1000"
-        boxShadow="md"
+        boxShadow="0.5px 0.5px 1px 0px gray"
         p={4}
         display="flex"
         justifyContent="space-between"
@@ -529,7 +527,7 @@ export const App = () => {
                 </div>
               ) : (
                 <Box mt={20} px={4}>
-                  <div
+                  {/* <div
                     style={{
                       width: "100%",
 
@@ -541,14 +539,14 @@ export const App = () => {
                       src={colorMode === "dark" ? logoDark : logoLight}
                       width={200}
                     />
-                  </div>
+                  </div> */}
                   <Heading
                     as="h4"
                     fontSize={{ base: "lg", md: "xl", lg: "2xl" }} // Adjusts font size for mobile, tablet, and desktop
                     textAlign="center" // Keeps the text centered
                     width="100%" // Ensures the header spans the full width
                     // Adjusts margin-top for mobile and larger screens
-                    mt={{ base: "-10", md: "-8" }}
+                    // mt={{ base: "-10", md: "-8" }}
                     px={{ base: 4, md: 0 }}
                   >
                     Other Stuff: Experience Decentralized Software
