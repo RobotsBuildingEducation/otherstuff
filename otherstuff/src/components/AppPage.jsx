@@ -11,9 +11,11 @@ import {
   SimpleGrid,
   VStack,
   textDecoration,
+  Input,
+  Button,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 export const AppPage = ({ app }) => {
   const textColor = useColorModeValue("gray.800", "white");
@@ -21,6 +23,19 @@ export const AppPage = ({ app }) => {
   // const featureColor = useColorModeValue(".600", "teal.300");
   const galleryBorderColor = useColorModeValue("gray.200", "gray.700");
 
+  const [passcode, setPasscode] = useState("");
+  const [hasAccess, setHasAccess] = useState(() => {
+    return localStorage.getItem(`global_app_access`) === "true";
+  });
+
+  const handlePasscodeChange = (e) => {
+    const value = e.target.value;
+    const correctPasscode = import.meta.env.VITE_APP_PASSCODE;
+    if (value === correctPasscode) {
+      localStorage.setItem(`global_app_access`, "true");
+      setHasAccess(true);
+    }
+  };
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -69,19 +84,31 @@ export const AppPage = ({ app }) => {
           </Stack>
 
           {/* External Link */}
-          <Link
-            href={app.url}
-            color="blue.400"
-            fontWeight="bold"
-            isExternal
-            fontSize="lg"
-          >
-            {/* Visit {app.name} */}
-            Launch app
-          </Link>
+
+          {hasAccess ? (
+            <Link
+              href={app.url}
+              color="blue.400"
+              fontWeight="bold"
+              isExternal
+              fontSize="lg"
+            >
+              Launch app
+            </Link>
+          ) : (
+            <Flex mt={4} flexDir={"column"}>
+              <b> Enter subscriber passcode to unlock access to app</b>
+              <Input
+                placeholder="Enter passcode"
+                onChange={handlePasscodeChange}
+                mt={4}
+                type="password"
+              />
+            </Flex>
+          )}
         </Box>
       </Flex>
-      {app.npub || app.submittedBy ? (
+      {/* {app.npub || app.submittedBy ? (
         <Box mt={8}>
           <Heading size="md" color={textColor} mb={2}>
             Creator
@@ -98,7 +125,7 @@ export const AppPage = ({ app }) => {
             Creator's page
           </RouterLink>
         </Box>
-      ) : null}
+      ) : null} */}
 
       {/* Features Section */}
       <Box mt={8}>
