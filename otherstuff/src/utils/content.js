@@ -33,7 +33,7 @@ export const apps = [
     npub: "npub14vskcp90k6gwp6sxjs2jwwqpcmahg6wz3h5vzq0yn6crrsq0utts52axlt",
     platforms: ["web"],
     thumb:
-      "https://res.cloudinary.com/dtkeyccga/image/upload/v1728270558/zre4dehmebfdikzeasoh.png",
+      "https://res.cloudinary.com/dtkeyccga/image/upload/v1743209424/FFFEF5_d4weow.png",
     url: "https://robotsbuildingeducation.com",
   },
   {
