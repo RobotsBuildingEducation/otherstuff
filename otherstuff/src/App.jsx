@@ -381,7 +381,7 @@ export const App = () => {
               )}
             </Box>
 
-            <Button
+            {/* <Button
               leftIcon={<FaGithub />}
               background="black"
               color="white"
@@ -389,7 +389,7 @@ export const App = () => {
               mt={4}
             >
               GitHub
-            </Button>
+            </Button> */}
             <Divider my={4} />
 
             {pathname === "/" ? (
